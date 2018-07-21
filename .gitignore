@@ -1,0 +1,22 @@
+# Prefer yarn over npm
+package-lock.json
+
+# All logs and tmps files
+*.log
+*.tmp
+
+# Files relative to XD mockups
+*.svg
+*.xd
+
+# IDE
+.config/
+.idea/
+
+# Dist
+dist/
+node_modules/
+
+# Coverages
+.nyc_output/
+coverage/
