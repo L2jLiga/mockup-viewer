@@ -8,8 +8,10 @@
 
 import * as express    from 'express';
 import * as fileUpload from 'express-fileupload';
-import { unlinkSync }  from 'fs';
-import { xd2svg }      from 'xd2svg/lib/xd2svg';
+import * as path       from 'path';
+import * as rimraf     from 'rimraf';
+import * as tmp        from 'tmp';
+import { xd2svg }      from 'xd2svg';
 import { application } from '../core';
 
 application.use(fileUpload());
@@ -17,17 +19,20 @@ application.use(fileUpload());
 application.post('/open', async (req: express.Request, res: express.Response) => {
   const file: fileUpload.UploadedFile = req.files.mockup as fileUpload.UploadedFile;
 
-  const tmp = `${__dirname}/tmp-file.xd`;
+  const tmpFolder = tmp.dirSync().name;
+  const tempFilePath = path.join(tmpFolder, 'tmp.xd');
 
-  file.mv(tmp, (error) => {
+  file.mv(tempFilePath, (error) => {
     if (error) {
       console.error('An error occurred while moving uploaded file! Reason: %O', error);
     }
   });
 
-  const mockups: string = await xd2svg(tmp, {format: 'svg', single: true}) as string;
+  const mockups: string = await xd2svg(tempFilePath, {format: 'svg', single: true}) as string;
 
-  unlinkSync(tmp);
+  rimraf(tmpFolder, (error) => {
+    console.error('An error occurred while cleaning up temp directory! Reason: %O', error);
+  });
 
   res.json({mockups});
 });
