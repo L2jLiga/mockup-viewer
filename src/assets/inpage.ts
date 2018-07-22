@@ -647,9 +647,9 @@ const refreshListener: EventListenerObject = {
 };
 
 function listen() {
-  document.documentElement.addEventListener('mouseover', mouseListener, true);
-  document.documentElement.addEventListener('mousemove', mouseListener, true);
-  document.documentElement.addEventListener('click', mouseListener, true);
+  mockupViewer.addEventListener('mouseover', mouseListener, true);
+  mockupViewer.addEventListener('mousemove', mouseListener, true);
+  mockupViewer.addEventListener('click', mouseListener, true);
   document.documentElement.addEventListener('keydown', keyListener, true);
   window.addEventListener('scroll', refreshListener, true);
   window.addEventListener('resize', refreshListener, true);
