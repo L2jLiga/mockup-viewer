@@ -19,8 +19,8 @@ application.use(fileUpload());
 application.post('/open', async (req: express.Request, res: express.Response) => {
   const file: fileUpload.UploadedFile = req.files.mockup as fileUpload.UploadedFile;
 
-  const tmpFolder = tmp.dirSync().name;
-  const tempFilePath = path.join(tmpFolder, 'tmp.xd');
+  const tmpFolder = tmp.dirSync();
+  const tempFilePath = path.join(tmpFolder.name, 'tmp.xd');
 
   file.mv(tempFilePath, (error) => {
     if (error) {
@@ -28,11 +28,13 @@ application.post('/open', async (req: express.Request, res: express.Response) =>
     }
   });
 
-  const mockups: string = await xd2svg(tempFilePath, {format: 'svg', single: true}) as string;
-
-  rimraf(tmpFolder, (error) => {
-    console.error('An error occurred while cleaning up temp directory! Reason: %O', error);
-  });
+  const mockups = await xd2svg(tempFilePath, {format: 'svg', single: false});
 
   res.json({mockups});
+
+  rimraf(path.join(tmpFolder.name, '*'), (error) => {
+    if (error) console.error('An error occurred while cleaning up temp directory! Reason: %O', error);
+
+    tmpFolder.removeCallback();
+  });
 });

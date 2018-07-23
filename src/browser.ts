@@ -7,3 +7,4 @@
  */
 
 import './assets/inpage';
+import './assets/open-file';

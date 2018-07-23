@@ -6,6 +6,10 @@
  * found in the LICENSE file at https://github.com/L2jLiga/mockup-viewer/LICENSE
  */
 
+.mockups-container__mockups svg:not(:target) {
+  display: none;
+}
+
 .tGs3czb {
   padding: 0;
   margin: 0;
