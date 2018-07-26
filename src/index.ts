@@ -18,6 +18,6 @@ module.exports = application.listen(PORT, () => {
   console.log(`Mockup viewer running on port ${PORT}`);
 });
 
-application.get('/', (req, res) => {
+application.get('/', (req: express.Request, res: express.Response) => {
   res.sendFile(__dirname + '/index.html');
 });

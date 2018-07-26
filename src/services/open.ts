@@ -6,21 +6,23 @@
  * found in the LICENSE file at https://github.com/L2jLiga/mockup-viewer/LICENSE
  */
 
-import * as express    from 'express';
-import * as fileUpload from 'express-fileupload';
-import * as path       from 'path';
-import * as rimraf     from 'rimraf';
-import * as tmp        from 'tmp';
-import { xd2svg }      from 'xd2svg';
-import { application } from '../core';
+import * as child_process from 'child_process';
+import * as express       from 'express';
+import * as fileUpload    from 'express-fileupload';
+import * as fs            from 'fs';
+import * as path          from 'path';
+import * as rimraf        from 'rimraf';
+import { application }    from '../core';
+import { tempFolder }     from '../registry/temp-folder';
 
 application.use(fileUpload());
 
 application.post('/open', async (req: express.Request, res: express.Response) => {
   const file: fileUpload.UploadedFile = req.files.mockup as fileUpload.UploadedFile;
 
-  const tmpFolder = tmp.dirSync();
-  const tempFilePath = path.join(tmpFolder.name, 'tmp.xd');
+  let tempFilePath = path.join(tempFolder.name, file.name);
+
+  while (fs.existsSync(tempFilePath)) tempFilePath += '-1';
 
   file.mv(tempFilePath, (error) => {
     if (error) {
@@ -28,13 +30,17 @@ application.post('/open', async (req: express.Request, res: express.Response) =>
     }
   });
 
-  const mockups = await xd2svg(tempFilePath, {format: 'svg', single: false});
+  console.log(`Start converting of ${file.name}`);
 
-  res.json({mockups});
+  const forked = child_process.fork(path.join(__dirname, 'convert-file.js'), [tempFilePath]);
 
-  rimraf(path.join(tmpFolder.name, '*'), (error) => {
-    if (error) console.error('An error occurred while cleaning up temp directory! Reason: %O', error);
+  forked.on('message', (mockups) => {
+    console.log(`Finish converting of ${file.name}`);
 
-    tmpFolder.removeCallback();
+    res.json(mockups);
+
+    rimraf(tempFilePath, (error: Error) => {
+      if (error) console.error('An error occurred while cleaning up temp directory! Reason: %O', error);
+    });
   });
 });
